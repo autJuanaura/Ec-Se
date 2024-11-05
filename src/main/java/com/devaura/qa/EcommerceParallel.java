@@ -7,21 +7,21 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.safari.SafariDriver;
 
-public class EcommerceFlow4 implements Runnable {
+public class EcommerceParallel implements Runnable {
 
     private String browser;
 
-    public EcommerceFlow4(String browser) {
+    public EcommerceParallel(String browser) {
         this.browser = browser;
     }
 
     public static void main(String[] args) {
         // Specify the number of parallel threads you want to run
-        int numberOfThreads = 50; // Change this as needed
+        int numberOfThreads = 1; // Change this as needed
         String browser = "chrome"; // Change to "safari" if needed
 
         for (int i = 0; i < numberOfThreads; i++) {
-            Thread thread = new Thread(new EcommerceFlow4(browser));
+            Thread thread = new Thread(new EcommerceParallel(browser));
             thread.start();
         }
     }
