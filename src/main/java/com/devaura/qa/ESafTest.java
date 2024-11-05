@@ -11,8 +11,7 @@ import org.openqa.selenium.safari.SafariOptions;
 public class ESafTest {
 
     public static void main(String[] args) throws InterruptedException {
-        // Specify the browser you want to use: "chrome" or "safari"
-        String browser = "chrome"; // Change to "chrome" if needed
+        String browser = "chrome"; 
 
         WebDriver driver = getDriver(browser);
         if (driver != null) {
@@ -43,8 +42,6 @@ public class ESafTest {
 
             WebElement cartItem = driver.findElement(By.cssSelector(".cart_item .inventory_item_name"));
             System.out.println("Item in cart: " + cartItem.getText());
-
-            // Close the driver
             driver.quit();
         } else {
             System.out.println("Driver not found for the specified browser.");
@@ -59,7 +56,6 @@ public class ESafTest {
                 driver = new ChromeDriver();
                 break;
             case "safari":
-                // Ensure this code runs only on macOS
                 if (System.getProperty("os.name").toLowerCase().contains("mac")) {
                     SafariOptions options = new SafariOptions();
                     // You can set options here if needed, e.g., options.setUseTechnologyPreview(true);

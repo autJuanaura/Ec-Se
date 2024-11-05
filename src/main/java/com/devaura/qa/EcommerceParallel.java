@@ -19,9 +19,8 @@ public class EcommerceParallel implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		// Specify the number of parallel threads you want to run
-		int numberOfThreads = 1; // Change this as needed
-		String browser = "chrome"; // Change to "safari" if needed
+		int numberOfThreads = 1; 
+		String browser = "chrome"; 
 
 		for (int i = 0; i < numberOfThreads; i++) {
 			Thread thread = new Thread(new EcommerceParallel(browser));
