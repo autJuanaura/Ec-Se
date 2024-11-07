@@ -19,7 +19,7 @@ public class EcommerceParallel implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		int numberOfThreads = 1; 
+		int numberOfThreads = 5; 
 		String browser = "chrome"; 
 
 		for (int i = 0; i < numberOfThreads; i++) {
