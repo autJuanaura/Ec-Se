@@ -1,0 +1,162 @@
+name: Selenium Grid Distributed Testing
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+env:
+  JAVA_VERSION: '22'
+  SELENIUM_GRID_VERSION: '4.19.0'
+
+jobs:
+  selenium-grid-setup:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Setup Java
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # 3. Setup Docker
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      # 4. Pull Selenium Grid Images
+      - name: Pull Selenium Grid Images
+        run: |
+          docker pull selenium/hub:${{ env.SELENIUM_GRID_VERSION }}
+          docker pull selenium/node-chrome:${{ env.SELENIUM_GRID_VERSION }}
+          docker pull selenium/node-firefox:${{ env.SELENIUM_GRID_VERSION }}
+          docker pull selenium/node-edge:${{ env.SELENIUM_GRID_VERSION }}
+
+      # 5. Start Selenium Grid
+      - name: Start Selenium Grid
+        run: |
+          docker network create grid
+
+          # Start Selenium Hub
+          docker run -d --net grid --name selenium-hub \
+            -p 4442:4442 -p 4443:4443 -p 4444:4444 \
+            selenium/hub:${{ env.SELENIUM_GRID_VERSION }}
+
+          # Start Chrome Nodes
+          docker run -d --net grid --name chrome-node-1 \
+            -e SE_EVENT_BUS_HOST=selenium-hub \
+            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+            selenium/node-chrome:${{ env.SELENIUM_GRID_VERSION }}
+
+          docker run -d --net grid --name chrome-node-2 \
+            -e SE_EVENT_BUS_HOST=selenium-hub \
+            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+            selenium/node-chrome:${{ env.SELENIUM_GRID_VERSION }}
+
+          # Start Firefox Nodes
+          docker run -d --net grid --name firefox-node-1 \
+            -e SE_EVENT_BUS_HOST=selenium-hub \
+            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+            selenium/node-firefox:${{ env.SELENIUM_GRID_VERSION }}
+
+          # Start Edge Nodes
+          docker run -d --net grid --name edge-node-1 \
+            -e SE_EVENT_BUS_HOST=selenium-hub \
+            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+            selenium/node-edge:${{ env.SELENIUM_GRID_VERSION }}
+
+          # Wait for Grid to be ready
+          sleep 20
+          docker ps
+
+      # 6. Verify Grid Status
+      - name: Verify Selenium Grid Status
+        run: |
+          curl http://localhost:4444/ui/index.html#/
+          docker logs selenium-hub
+
+  distributed-testing:
+    needs: selenium-grid-setup
+    strategy:
+      matrix:
+        browser: [chrome, firefox, edge]
+        test-group: [smoke, regression, integration]
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Setup Java
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # 3. Maven Dependencies
+      - name: Install Dependencies
+        run: mvn clean install -DskipTests
+
+      # 4. Run Distributed Tests
+      - name: Run Distributed Selenium Grid Tests
+        env:
+          BROWSER: ${{ matrix.browser }}
+          TEST_GROUP: ${{ matrix.test-group }}
+        run: |
+          mvn test \
+            -Dselenium.grid.url=http://localhost:4444/wd/hub \
+            -Dbrowser=$BROWSER \
+            -Dtest.group=$TEST_GROUP
+
+      # 5. Upload Test Results
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.browser }}-${{ matrix.test-group }}
+          path: |
+            target/surefire-reports
+            target/screenshots
+          retention-days: 5
+
+  # Performance and Load Testing
+  grid-performance-test:
+    needs: distributed-testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Performance Tests
+        run: |
+          # Example of running load tests
+          docker run --network grid \
+            -v $(pwd)/performance:/scripts \
+            justb4/jmeter \
+            -n -t /scripts/selenium-grid-load-test.jmx \
+            -l /scripts/results.jtl
+
+  # Cleanup Job
+  cleanup:
+    if: always()
+    needs: [distributed-testing, grid-performance-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup Selenium Grid
+        run: |
+          docker stop selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 edge-node-1
+          docker rm selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 edge-node-1
+          docker network rm grid
