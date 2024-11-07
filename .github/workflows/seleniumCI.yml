@@ -121,7 +121,7 @@ jobs:
             -Dbrowser=$BROWSER \
             -Dtest.group=$TEST_GROUP
 
-      # 5. Upload Test Results
+          # 5. Upload Test Results
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
@@ -140,6 +140,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create Docker Network
+        run: |
+          docker network create grid
+
       - name: Run Performance Tests
         run: |
           # Example of running load tests
@@ -149,6 +156,11 @@ jobs:
             -n -t /scripts/selenium-grid-load-test.jmx \
             -l /scripts/results.jtl
 
+      - name: Cleanup Docker Network
+        if: always()
+        run: |
+          docker network rm grid
+
   # Cleanup Job
   cleanup:
     if: always()
@@ -157,6 +169,6 @@ jobs:
     steps:
       - name: Cleanup Selenium Grid
         run: |
-          docker stop selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 edge-node-1
-          docker rm selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 edge-node-1
-          docker network rm grid
+          docker stop selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 edge-node-1 || true
+          docker rm selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 edge-node-1 || true
+          docker network rm grid || true
