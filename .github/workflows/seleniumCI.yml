@@ -12,6 +12,7 @@ env:
   SELENIUM_GRID_VERSION: '4.19.0'
 
 jobs:
+  # Job to set up the Selenium Grid
   selenium-grid-setup:
     runs-on: ubuntu-latest
     steps:
@@ -86,6 +87,7 @@ jobs:
           curl http://localhost:4444/ui/index.html#/
           docker logs selenium-hub
 
+  # Job to run distributed tests
   distributed-testing:
     needs: selenium-grid-setup
     strategy:
@@ -119,7 +121,7 @@ jobs:
           mvn test \
             -Dselenium.grid.url=http://localhost:4444/wd/hub \
             -Dbrowser=$BROWSER \
-            -Dtest.group=$TEST_GROUP
+                        -Dtest.group=$TEST_GROUP
 
       # 5. Upload Test Results
       - name: Upload Test Results
@@ -132,30 +134,36 @@ jobs:
             target/screenshots
           retention-days: 5
 
-  # Performance and Load Testing
+  # Job for performance and load testing
   grid-performance-test:
     needs: distributed-testing
     runs-on: ubuntu-latest
     steps:
+      # 1. Checkout Repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # 2. Set up Docker
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
 
+      # 3. Create Docker Network
       - name: Create Docker Network
         run: |
           docker network create grid
 
+      # 4. Run Performance Tests
+            # 4. Run Performance Tests
       - name: Run Performance Tests
         run: |
           # Example of running load tests
           docker run --network grid \
-            -v $(pwd)/performance:/scripts \
+            -v ${{ github.workspace }}/scripts:/scripts \
             justb4/jmeter \
             -n -t /scripts/selenium-grid-load-test.jmx \
             -l /scripts/results.jtl
 
+      # 5. Upload Performance Test Results
       - name: Upload Performance Test Results
         if: always()
         uses: actions/upload-artifact@v4
@@ -164,24 +172,28 @@ jobs:
           path: /scripts/results.jtl
           retention-days: 5
 
+      # 6. Cleanup Docker Network
       - name: Cleanup Docker Network
         if: always()
         run: |
           docker network rm grid
 
-  # Report Generation and Deployment
+  # Job for report generation and deployment
   report:
     needs: [distributed-testing, grid-performance-test]
     runs-on: ubuntu-latest
     steps:
+      # 1. Checkout Repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # 2. Generate Reports
       - name: Generate Reports
         run: |
           # Assuming you have a Maven plugin or script to generate reports
           mvn site
 
+      # 3. Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -200,3 +212,4 @@ jobs:
           docker stop selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 edge-node-1 || true
           docker rm selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 edge-node-1 || true
           docker network rm grid || true
+
