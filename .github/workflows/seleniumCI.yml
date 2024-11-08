@@ -121,9 +121,9 @@ jobs:
           mvn test \
             -Dselenium.grid.url=http://localhost:4444/wd/hub \
             -Dbrowser=$BROWSER \
-                        -Dtest.group=$TEST_GROUP
+            -Dtest.group=$TEST_GROUP
 
-      # 5. Upload Test Results
+            # 5. Upload Test Results
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
@@ -143,24 +143,25 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. Set up Docker
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v3
-
-      # 3. Create Docker Network
-      - name: Create Docker Network
+      # 2. Install Apache Bench
+      - name: Install Apache Bench
         run: |
-          docker network create grid
+          sudo apt-get update
+          sudo apt-get install -y apache2-utils
+
+      # 3. Start Your Application
+      - name: Start Application
+        run: |
+          # Start your application in the background
+          mvn spring-boot:run &  # Adjust this command based on how you start your app
+          sleep 30  # Wait for the application to start
 
       # 4. Run Performance Tests
       - name: Run Performance Tests
         run: |
-          # Example of running load tests
-          docker run --network grid \
-            -v ${{ github.workspace }}/scripts:/scripts \
-            justb4/jmeter \
-            -n -t /scripts/selenium-grid-load-test.jmx \
-            -l /scripts/results.jtl
+          # Example of running load tests using Apache Bench
+          ab -n 100 -c 10 http://localhost:8080/ > performance_results.txt
+          cat performance_results.txt
 
       # 5. Upload Performance Test Results
       - name: Upload Performance Test Results
@@ -168,14 +169,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: performance-results
-          path: /scripts/results.jtl
+          path: performance_results.txt
           retention-days: 5
 
-      # 6. Cleanup Docker Network
-      - name: Cleanup Docker Network
-        if: always()
+      # 6. Cleanup
+      - name: Cleanup
         run: |
-          docker network rm grid
+          pkill -f 'java -jar' || true  # Adjust this command based on how your app runs
 
   # Job for report generation and deployment
   report:
@@ -211,4 +211,3 @@ jobs:
           docker stop selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 edge-node-1 || true
           docker rm selenium-hub chrome-node-1 chrome-node-2 firefox-node-1 edge-node-1 || true
           docker network rm grid || true
-
