@@ -1,0 +1,56 @@
+<TestPlan>
+    <ThreadGroup>
+        <name>Login Test Group</name>
+        <numThreads>50</numThreads>
+        <rampTime>10</rampTime>
+        <loopCount>1</loopCount>
+
+        <sampler>
+            <HTTPSamplerProxy>
+                <domain>yourdomain.com</domain>
+                <port>443</port>
+                <protocol>https</protocol>
+                <path>/login</path>
+                <method>POST</method>
+                <arguments>
+                    <argument>
+                        <name>username</name>
+                        <value>${username}</value>
+                    </argument>
+                    <argument>
+                        <name>password</name>
+                        <value>${password}</value>
+                    </argument>
+                </arguments>
+            </HTTPSamplerProxy>
+        </sampler>
+
+        <CSVDataSet>
+            <filename>loginData.csv</filename>
+            <variableNames>username,password</variableNames>
+            <recycle>True</recycle>
+            <stopThread>False</stopThread>
+            <shareMode>shareModeAll</shareMode>
+        </CSVDataSet>
+
+        <ConstantTimer>
+            <delay>1000</delay> <!-- 1 second delay -->
+        </ConstantTimer>
+
+        <ResponseAssertion>
+            <name>Check for Successful Login</name>
+            <testField>Response Text</testField>
+            <testString>Welcome</testString> <!-- Adjust based on the actual response -->
+            <assumeSuccess>false</assumeSuccess>
+        </ResponseAssertion>
+
+        <ResultCollector>
+            <name>Summary Report</name>
+        </ResultCollector>
+
+        <SimpleDataWriter>
+            <filename>results.jtl</filename>
+            <writeAsXml>false</writeAsXml>
+        </SimpleDataWriter>
+    </ThreadGroup>
+</TestPlan>
