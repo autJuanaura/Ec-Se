@@ -40,7 +40,7 @@ jobs:
           docker pull selenium/node-firefox:${{ env.SELENIUM_GRID_VERSION }}
           docker pull selenium/node-edge:${{ env.SELENIUM_GRID_VERSION }}
 
-      # 5. Start Selenium Grid
+     # 5. Start Selenium Grid
       - name: Start Selenium Grid
         run: |
           docker network create grid
@@ -76,6 +76,37 @@ jobs:
             -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
             -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
             selenium/node-edge:${{ env.SELENIUM_GRID_VERSION }}
+
+          # Start Safari Nodes
+          docker run -d --net grid --name safari-node-1 \
+            -e SE_EVENT_BUS_HOST=selenium-hub \
+            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+            selenium/node-safari:${{ env.SELENIUM_GRID_VERSION }}
+
+          docker run -d --net grid --name safari-node-2 \
+            -e SE_EVENT_BUS_HOST=selenium-hub \
+            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+            selenium/node-safari:${{ env.SELENIUM_GRID_VERSION }}
+
+          docker run -d --net grid --name safari-node-3 \
+            -e SE_EVENT_BUS_HOST=selenium-hub \
+            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+            selenium/node-safari:${{ env.SELENIUM_GRID_VERSION }}
+
+          docker run -d --net grid --name safari-node-4 \
+            -e SE_EVENT_BUS_HOST=selenium-hub \
+            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+            selenium/node-safari:${{ env.SELENIUM_GRID_VERSION }}
+
+          docker run -d --net grid --name safari-node-5 \
+            -e SE_EVENT_BUS_HOST=selenium-hub \
+            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
+            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
+            selenium/node-safari:${{ env.SELENIUM_GRID_VERSION }}
 
           # Wait for Grid to be ready
           sleep 20
