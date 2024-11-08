@@ -153,7 +153,6 @@ jobs:
           docker network create grid
 
       # 4. Run Performance Tests
-            # 4. Run Performance Tests
       - name: Run Performance Tests
         run: |
           # Example of running load tests
