@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.1">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Selenium Grid Load Test" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <elementProp name="TestPlan.user_defined" elementType="Arguments">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_defined" elementType="Arguments"/>
+      <stringProp name="TestPlan.user_defined" elementType="Arguments"/>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
+        <stringProp name="ThreadGroup.num_threads">5</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController">
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <WebDriverSampler guiclass="WebDriverSamplerGui" testclass="WebDriverSampler" testname="Selenium WebDriver Sampler" enabled="true">
+          <stringProp name="webdriver.samplers.code">
+            import org.openqa.selenium.By;
+            import org.openqa.selenium.WebElement;
+            import org.openqa.selenium.remote.DesiredCapabilities;
+            import org.openqa.selenium.remote.RemoteWebDriver;
+
+            String gridUrl = "http://localhost:4444/wd/hub";
+            String browser = "chrome";
+
+            DesiredCapabilities capabilities = new DesiredCapabilities();
+            capabilities.setBrowserName(browser);
+            WebDriver driver = new RemoteWebDriver(new URL(gridUrl), capabilities);
+
+            try {
+                driver.get("https://www.saucedemo.com/");
+                driver.manage().window().maximize();
+                driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+
+                WebElement userNameField = driver.findElement(By.id("user-name"));
+                WebElement psswdField = driver.findElement(By.id("password"));
+                WebElement loginButton = driver.findElement(By.id("login-button"));
+
+                userNameField.sendKeys("standard_user");
+                psswdField.sendKeys("secret_sauce");
+                loginButton.click();
+                Thread.sleep(2000);
+
+                WebElement firstProduct = driver.findElement(By.cssSelector(".inventory_item:first-child .inventory_item_name"));
+                firstProduct.click();
+                Thread.sleep(2000);
+            } catch (Exception e) {
+                log.error("Error: " + e.getMessage());
+            } finally {
+                driver.quit();
+            }
+          </stringProp>
+        </WebDriverSampler>
+        <hashTree/>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <stringProp name="filename"/>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
