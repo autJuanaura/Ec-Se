@@ -24,6 +24,7 @@ Clone the repository to your local machine:
 ```bash
 git clone https://github.com/autjuanma/Ec-Se.git
 cd Ec-Se
+```
 
 ### 2. Build the Project
 
@@ -43,9 +44,18 @@ cd Ec-Se
 - **License**: @MashaCODE.
 
 
+
+
+<div align="center">
+<pre>
+╔═════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                 ║
 ![alt text](https://github.com/autjuanma/Ec-Se/blob/master/test-report/7657890.png)
-
-
+║                                                                                 ║
+║                                                                                 ║
+╚═════════════════════════════════════════════════════════════════════════════════╝
+</pre>
+</div>
 
 
 
