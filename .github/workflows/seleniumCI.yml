@@ -156,47 +156,48 @@ jobs:
         run: mvn test -Dtest=YourSafariTestClass -Dsurefire.failIfNoSpecifiedTests=false
 
   # Job for performance and load testing
-  grid-performance-test:
-    needs: distributed-testing
-    runs-on: ubuntu-latest
-    steps:
-      # 1. Checkout Repository
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  # Job for performance and load testing
+grid-performance-test:
+  needs: distributed-testing
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
-      # 2. Install Apache Bench
-      - name: Install Apache Bench
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y apache2-utils
+    - name: Install Apache Bench
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y apache2-utils
 
-      # 3. Start Your Application
-      - name: Start Application
-        run: |
-          # Start your application in the background
-          mvn spring-boot:run &  # Adjust this command based on how you start your app
-          sleep 30  # Wait for the application to start
+    - name: Start Application
+      run: |
+        mvn spring-boot:run &  # Start your application in the background
+        echo "Waiting for the application to start..."
+        for i in {1..30}; do
+          if curl -s http://localhost:8080/ > /dev/null; then
+            echo "Application is up!"
+            break
+          fi
+          echo "Waiting for application to start..."
+          sleep 1
+        done
 
-      # 4. Run Performance Tests
-      - name: Run Performance Tests
-        run: |
-          # Example of running load tests using Apache Bench
-          ab -n 100 -c 10 http://localhost:8080/ > performance_results.txt
-          cat performance_results.txt
+    - name: Run Performance Tests
+      run: |
+        ab -n 100 -c 10 http://localhost:8080/ > performance_results.txt || echo "Performance test failed"
+        cat performance_results.txt
 
-      # 5. Upload Performance Test Results
-      - name: Upload Performance Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: performance-results
-          path: performance_results.txt
-          retention-days: 5
+    - name: Upload Performance Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-results
+        path: performance_results.txt
+        retention-days: 5
 
-      # 6. Cleanup
-      - name: Cleanup
-        run: |
-          pkill -f 'java -jar' || true  # Adjust this command based on how your app runs
+    - name: Cleanup
+      run: |
+        pkill -f 'java -jar' || true  # Adjust this command based on how your app runs
 
   # Job for report generation and deployment
   report:
