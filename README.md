@@ -25,17 +25,6 @@ Clone the repository to your local machine:
 git clone https://github.com/autjuanma/Ec-Se.git
 cd Ec-Se
 
-
-<div align="center">
-<pre>
-╔═════════════════════════════════════════════════════════════════════════════════╗
-║                                                                                 ║
-![alt text](https://github.com/autjuanma/Ec-Se/blob/master/test-report/7657890.png)
-║                                                                                 ║
-╚═════════════════════════════════════════════════════════════════════════════════╝
-</pre>
-</div>
-
 ### 2. Build the Project
 
 [mvn clean install]
@@ -53,6 +42,8 @@ cd Ec-Se
 - **Execution Steps**: Clear steps for cloning the repository, building the project, running tests, and viewing results.
 - **License**: @MashaCODE.
 
+
+![alt text](https://github.com/autjuanma/Ec-Se/blob/master/test-report/7657890.png)
 
 
 
