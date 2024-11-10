@@ -135,7 +135,7 @@ jobs:
           retention-days: 5
 
   # Job to run tests on Safari
- run-safari-tests:
+  run-safari-tests:
     runs-on: macos-latest
     needs: selenium-grid-setup
     steps:
@@ -150,13 +150,11 @@ jobs:
           cache: 'maven'
 
       - name: Install Dependencies
-        run: |
-          mvn install
+        run: mvn install
 
       - name: Run Safari Tests
-        run: |
-          mvn test -Dtest=YourSafariTestClass -Dsurefire.failIfNoSpecifiedTests=false
-          
+        run: mvn test -Dtest=YourSafariTestClass -Dsurefire.failIfNoSpecifiedTests=false
+
   # Job for performance and load testing
   grid-performance-test:
     needs: distributed-testing
