@@ -1,5 +1,7 @@
 # Cross-Browser Selenium Testing with Maven
 
+![alt text](https://github.com/autjuanma/Ec-Se/blob/master/test-report/9876567890.jpg)
+
 ## Overview
 
 This repository implements cross-browser testing using Selenium with Maven. It ensures web applications function correctly across various browsers.
