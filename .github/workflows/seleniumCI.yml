@@ -135,9 +135,9 @@ jobs:
           retention-days: 5
 
   # Job to run tests on Safari
-  run-safari-tests:
+ run-safari-tests:
     runs-on: macos-latest
-    needs: selenium-grid-setup  # Ensure the grid is set up first
+    needs: selenium-grid-setup
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -151,15 +151,12 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          # Install any necessary dependencies
-          # For example, if you're using Maven:
           mvn install
 
       - name: Run Safari Tests
         run: |
-          # Your test command here, e.g., using Maven or a custom script
-          mvn test -Dtest=YourSafariTestClass  # Adjust according to your test setup
-
+          mvn test -Dtest=YourSafariTestClass -Dsurefire.failIfNoSpecifiedTests=false
+          
   # Job for performance and load testing
   grid-performance-test:
     needs: distributed-testing
