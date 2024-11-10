@@ -77,37 +77,6 @@ jobs:
             -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
             selenium/node-edge:${{ env.SELENIUM_GRID_VERSION }}
 
-          # Start Safari Nodes
-          docker run -d --net grid --name safari-node-1 \
-            -e SE_EVENT_BUS_HOST=selenium-hub \
-            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
-            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
-            selenium/node-safari:${{ env.SELENIUM_GRID_VERSION }}
-
-          docker run -d --net grid --name safari-node-2 \
-            -e SE_EVENT_BUS_HOST=selenium-hub \
-            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
-            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
-            selenium/node-safari:${{ env.SELENIUM_GRID_VERSION }}
-
-          docker run -d --net grid --name safari-node-3 \
-            -e SE_EVENT_BUS_HOST=selenium-hub \
-            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
-            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
-            selenium/node-safari:${{ env.SELENIUM_GRID_VERSION }}
-
-          docker run -d --net grid --name safari-node-4 \
-            -e SE_EVENT_BUS_HOST=selenium-hub \
-            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
-            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
-            selenium/node-safari:${{ env.SELENIUM_GRID_VERSION }}
-
-          docker run -d --net grid --name safari-node-5 \
-            -e SE_EVENT_BUS_HOST=selenium-hub \
-            -e SE_EVENT_BUS_PUBLISH_PORT=4442 \
-            -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 \
-            selenium/node-safari:${{ env.SELENIUM_GRID_VERSION }}
-
           # Wait for Grid to be ready
           sleep 20
           docker ps
@@ -164,6 +133,32 @@ jobs:
             target/surefire-reports
             target/screenshots
           retention-days: 5
+
+  # Job to run tests on Safari
+  run-safari-tests:
+    runs-on: macos-latest
+    needs: selenium-grid-setup  # Ensure the grid is set up first
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Install Dependencies
+        run: |
+          # Install any necessary dependencies
+          # For example, if you're using Maven:
+          mvn install
+
+      - name: Run Safari Tests
+        run: |
+          # Your test command here, e.g., using Maven or a custom script
+          mvn test -Dtest=YourSafariTestClass  # Adjust according to your test setup
 
   # Job for performance and load testing
   grid-performance-test:
